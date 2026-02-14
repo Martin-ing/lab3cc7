@@ -104,13 +104,18 @@ void uart_putnum(unsigned int num) {
 
 void timer_init(void) {
     // TODO: Implement timer initialization
+    // se habilita el timer
     PUT32(CM_PER_TIMER2_CLKCTRL, 0x2);
+    //se configura el controlador de interrupciones y se le da prioridad a la interrupcion del timer
     PUT32(INTC_MIR_CLEAR2, (1 << 4));
     PUT32(INTC_ILR68, 0x0);
+    //se detiene el timer y se limpian las flags
     PUT32(TCLR, 0x0);
     PUT32(TISR, 0x7);
+    //se carga el valor para 2 segundos a 24 MHz
     PUT32(TLDR, 0xFE91CA00);
     PUT32(TCRR, 0xFE91CA00);
+    //se habilita el overflow y el auto reload
     PUT32(TIER, 0x2);
     PUT32(TCLR, 0x3);
 }
@@ -122,8 +127,11 @@ void timer_init(void) {
 // 3. Print "Tick\n" via UART
 void timer_irq_handler(void) {
     // TODO: Implement timer interrupt handler
+    //limpia el flag del overflow del timer
     PUT32(TISR, 0x2);
+    //se reconoce la interrupción en el controlador
     PUT32(INTC_CONTROL, 0x1);
+    //se imprime el tick
     os_write("Tick\n");
 }
 
@@ -140,6 +148,7 @@ unsigned int rand(void) {
 }
 
 int main(void) {
+    //inicializar el timer y habilitar las interrupciones
     timer_init();
     enable_irq();
 

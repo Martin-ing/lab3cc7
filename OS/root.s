@@ -50,10 +50,11 @@ data_handler:
 // 3. Restore all registers
 // 4. Return from interrupt using: subs pc, lr, #4
 irq_handler:
-    push {r0-r12, lr}          @ Save registers
-    bl timer_irq_handler     @ Call C handler
-    pop  {r0-r12, lr}          @ Restore registers
-    subs pc, lr, #4            @ Return from IRQ
+//se guardan los registros importantes en el stack para sacarlos luego y se manda a llamar a la funcion en c
+    push {r0-r12, lr}
+    bl timer_irq_handler
+    pop  {r0-r12, lr}
+    subs pc, lr, #4
 
 fiq_handler:
     b hang
@@ -76,9 +77,11 @@ GET32:
 // 3. Write back to CPSR
 .globl enable_irq
 enable_irq:
-    mrs r0, cpsr          @ r0 = CPSR
-    bic r0, r0, #0x80     @ clear I bit (bit 7) => enable IRQ
-    msr cpsr_c, r0        @ write back control field
+//se modifica el registro de estado del programa actual
+//se hace que el CPU acepte interrupciones tipo IRQ
+    mrs r0, cpsr
+    bic r0, r0, #0x80
+    msr cpsr_c, r0
     bx lr
 
 // Stack space allocation
